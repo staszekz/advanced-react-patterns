@@ -8,18 +8,16 @@ function Toggle(props) {
   const [on, setOn] = React.useState(false)
   const toggle = () => setOn(!on)
 
-
-
   // 🐨 replace this with a call to React.Children.map and map each child in
   // props.children to a clone of that child with the props they need using
   // React.cloneElement.
-   return React.Children.map(props.children, child => {
+  return React.Children.map(props.children, child => {
     /* return child clone here */
-    if(typeof child.type === 'string'){
+    if (typeof child.type === 'string') {
       return child
     }
-      return React.cloneElement(child, {toggle, on})
-    })
+    return React.cloneElement(child, {toggle, on})
+  })
   // 📜 https://reactjs.org/docs/react-api.html#reactchildren
   // 📜 https://reactjs.org/docs/react-api.html#cloneelement
   // return <Switch on={on} onClick={toggle} />
@@ -28,14 +26,19 @@ function Toggle(props) {
 // 🐨 Flesh out each of these components
 
 const ToggleOn = ({on, children}) => {
-  return on ? children : null}
+  return on ? children : null
+}
 
 // Accepts `on` and `children` props and returns `children` if `on` is false
-const ToggleOff =  ({on, children}) => !on ? children : null
-
+const ToggleOff = ({on, children}) => (!on ? children : null)
+// on dostaje propsy z Toggle poprtzez cloneElement i już neimusi dotsawać z przekazania => wchodzą automatycznie
+const NewToggleMessage = ({on}) => {
+  return on ? 'Button is on yo' : 'Button is yet off'
+}
 // Accepts `on` and `toggle` props and returns the <Switch /> with those props.
 const ToggleButton = ({on, toggle}) => {
-return <Switch on={on} onClick={ toggle} />}
+  return <Switch on={on} onClick={toggle} />
+}
 
 function App() {
   return (
@@ -45,6 +48,7 @@ function App() {
         <ToggleOff>The button is off</ToggleOff>
         <span>Hello</span>
         <ToggleButton />
+        <NewToggleMessage />
       </Toggle>
     </div>
   )
