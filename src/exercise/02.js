@@ -16,7 +16,12 @@ function Toggle(props) {
     if (typeof child.type === 'string') {
       return child
     }
-    return React.cloneElement(child, {toggle, on})
+    // LUB
+    if (allowedTypes.includes(child.type)) {
+      return React.cloneElement(child, {toggle, on})
+    }
+    return child
+    // return React.cloneElement(child, {toggle, on})
   })
   // 📜 https://reactjs.org/docs/react-api.html#reactchildren
   // 📜 https://reactjs.org/docs/react-api.html#cloneelement
@@ -24,7 +29,7 @@ function Toggle(props) {
 }
 
 // 🐨 Flesh out each of these components
-
+const allowedTypes = [ToggleOn, ToggleOff, ToggleButton]
 const ToggleOn = ({on, children}) => {
   return on ? children : null
 }
