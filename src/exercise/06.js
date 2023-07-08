@@ -3,6 +3,7 @@
 
 import * as React from 'react'
 import {Switch} from '../switch'
+import warning from 'warning'
 
 const callAll =
   (...fns) =>
@@ -33,14 +34,26 @@ function useToggle({
   reducer = toggleReducer,
   onChange,
   on: controlledOn,
+  readOnly = false,
 } = {}) {
+  // console.log('🚀 ~ onIsControlled:', warning(true, 'jakis warnig'))
   const {current: initialState} = React.useRef({on: initialOn})
   const [state, dispatch] = React.useReducer(reducer, initialState)
 
   const onIsControlled = controlledOn != null
 
   const on = onIsControlled ? controlledOn : state.on
-  console.log('🚀 ~ onIsControlled:', onIsControlled)
+
+  const hasOnChange = Boolean(onChange)
+  React.useEffect(() => {
+    if (!hasOnChange && onIsControlled && !readOnly) {
+      // console.error('') zamiast tego jest warning z Reacta
+      warning(
+        false,
+        'somethig bad, need to provide either readOnly prop or add onChange',
+      )
+    }
+  }, [hasOnChange, onIsControlled, readOnly])
 
   function dispatchWithOnChange(action) {
     if (!onIsControlled) dispatch(action)
@@ -84,12 +97,13 @@ function useToggle({
   }
 }
 
-function Toggle({on: controlledOn, onChange, initialOn, reducer}) {
+function Toggle({on: controlledOn, onChange, initialOn, reducer, readOnly}) {
   const {on, getTogglerProps} = useToggle({
     on: controlledOn,
     onChange,
     initialOn,
     reducer,
+    readOnly,
   })
   const props = getTogglerProps({on})
   return <Switch {...props} />
@@ -100,7 +114,6 @@ function App() {
   const [timesClicked, setTimesClicked] = React.useState(0)
 
   function handleToggleChange(state, action) {
-    console.log('🚀 ~ state:', state)
     if (action.type === actionTypes.toggle && timesClicked > 4) {
       return
     }
@@ -117,7 +130,7 @@ function App() {
   return (
     <div>
       <div>
-        <Toggle on={bothOn} onChange={handleToggleChange} />
+        <Toggle on={bothOn} readOnly />
         <Toggle on={bothOn} onChange={handleToggleChange} />
       </div>
       {timesClicked > 4 ? (
