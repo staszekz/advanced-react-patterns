@@ -28,6 +28,47 @@ function toggleReducer(state, {type, initialState}) {
     }
   }
 }
+const prod = process.env.NODE_ENV === 'production'
+
+function useControlledSwitchWarning(
+  controlPropsValue,
+  controlPropsName,
+  componentName,
+) {
+  const isControlled = controlPropsValue != null
+  const {current: wasControlled} = React.useRef(isControlled)
+
+  React.useEffect(() => {
+    warning(
+      !(isControlled && !wasControlled),
+      'Changing from uncontrolled to controlled',
+    )
+    warning(
+      !(!isControlled && wasControlled),
+      'Changing from controlled to uncontrolled',
+    )
+  }, [isControlled, wasControlled])
+}
+
+function useOnChangeReadOnlyWarning(
+  controlPropValue,
+  controlPropName,
+  componentName,
+  hasOnChange,
+  readOnly,
+  readOnlyProp,
+  initialValueProp,
+  onChangeProp,
+) {
+  // const hasONChage = Boolean(onChange)
+  const isControlled = controlPropValue != null
+  React.useEffect(() => {
+    warning(
+      !(!hasOnChange && isControlled && !readOnly),
+      'something bad happened',
+    )
+  }, [hasOnChange, isControlled, readOnly])
+}
 
 function useToggle({
   initialOn = false,
@@ -45,15 +86,22 @@ function useToggle({
   const on = onIsControlled ? controlledOn : state.on
 
   const hasOnChange = Boolean(onChange)
-  React.useEffect(() => {
-    if (!hasOnChange && onIsControlled && !readOnly) {
-      // console.error('') zamiast tego jest warning z Reacta
-      warning(
-        false,
-        'somethig bad, need to provide either readOnly prop or add onChange',
-      )
-    }
-  }, [hasOnChange, onIsControlled, readOnly])
+  if (!prod) {
+    // jest OK że tutaj wyłaczany conditionnaly hook call, bo to się nie zmieni podczas zycia komponentu
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useControlledSwitchWarning(controlledOn, 'on', 'useToggle')
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useOnChangeReadOnlyWarning(
+      controlledOn,
+      'on',
+      'useToggle',
+      Boolean(onChange),
+      readOnly,
+      'readOnly',
+      'initialOn',
+      'onChange',
+    )
+  }
 
   function dispatchWithOnChange(action) {
     if (!onIsControlled) dispatch(action)
